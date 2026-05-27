@@ -1,253 +1,196 @@
-# Topic 3 重點整理
+# Topic 3 知識概念整理：稽核、IDS、事件處理與偵測
 
-Topic 3 主要在考「稽核與問責」、「入侵偵測」、「事件處理與鑑識」、「滲透測試/倫理駭客」、「Due care / Due diligence」。
+Topic 3 的主軸是「如何知道事情發生了、如何追蹤責任、如何偵測入侵，以及如何在事件後保留證據」。它和 Topic 1 的 accountability 有重疊，但更偏偵測、稽核與事件回應。
 
 ## 1. Accountability 與 Audit
 
-### Accountability 問責
+Accountability 是讓系統行為可以追溯到特定主體。它依靠三個基礎：
 
-- 問責需要能把行為追溯到特定使用者或程序。
-- 核心條件：
-  - Identification and authentication
-  - Audit mechanisms / audit trails
-  - Access control
-- 常見答案：
-  - System accountability 需要 **audit mechanisms**。
-  - 提供 accountability 最直接的是 **audit trails**。
-  - 控制敏感資料存取的 accountability 來自 **識別、驗證、存取控制與稽核功能**。
+- Identification and authentication：知道使用者是誰，並驗證身分。
+- Access control：限制使用者能做什麼。
+- Audit mechanisms / audit trails：留下可追蹤紀錄。
 
-### Audit trails 稽核軌跡
+系統要有 accountability，不能只靠「大家都有帳號」。如果沒有稽核紀錄，就很難證明誰在何時做了什麼。
 
-- Audit trails 可用來偵測入侵、追蹤使用者行為、分析違規。
-- Host-based IDS 很依賴主機上的 audit trails / event logs。
-- Timely review of system access audit records 屬於 **detection**。
-- Clipping level 是設定可接受的正常錯誤/違規基準，超過門檻才記錄或分析。
+Audit trail 通常包含使用者、時間、事件、資源、成功或失敗狀態。它可用來支援偵測、調查、責任歸屬與合規。
 
-### Auditor 稽核角色
+Timely review of system access audit records 是 detective control。它不是防止事件發生，而是讓組織及早發現異常。
 
-- 衡量資訊系統安全控制有效性：**systems auditor**。
-- 向高階管理層報告控制有效性：**information systems auditors**。
-- Self-audit 與 independent audit 的主要差異：**objectivity**。
+Clipping level 是在產生違規紀錄或警示前，可以容忍的違規次數。它用來降低雜訊，但設定太高可能錯過攻擊。
 
-## 2. Data Owner 與管理責任
+## 2. Auditor、Data Owner 與管理責任
 
-### Data / Information Owner
+Systems auditor 或 information systems auditor 的角色是衡量資訊系統安全控制是否有效。他們應保持客觀性，避免自己設計、自己稽核造成利益衝突。
 
-- 最能決定資料保護所需技術控制的人是 **Data or Information Owner**。
-- 因為 owner 知道資料的價值、重要性、敏感度與業務需求。
+Self-audit 的問題不是一定錯，而是 objectivity 較弱。Independent audit 較能提供可信的外部觀點。
 
-### Due care / Due diligence
+Data / Information Owner 最適合決定資料保護需求，因為 owner 了解資料的價值、敏感度、業務用途與風險。
 
-- Due care 關鍵字：good faith、prudent man、best interest。
-- Due care 不直接和 **profit** 相關。
-- 不違反 due diligence 的例子：依照 patch management process 安裝最新安全修補。
+在 OLTP 等交易系統中，偵測到 invalid transactions 時，常見概念是把錯誤交易寫入報表並交由人員 review，而不是直接丟棄或自行修正。這是為了保留可追蹤性與避免自動修正造成更大錯誤。
 
-## 3. IDS 基礎
+Due care 是「合理謹慎地做該做的事」，可理解為 good faith、prudent person、best interest。它不等於追求 profit。
 
-### IDS 是什麼
+Due diligence 是持續調查、追蹤與確認風險處理是否有效。例如建立並執行 patch management process，就比較接近 due diligence。
 
-- IDS 用來即時監控網路流量或主機稽核紀錄，偵測是否違反安全政策。
-- 最常見的兩種 IDS：
-  - Network-based IDS, NIDS
-  - Host-based IDS, HIDS
+## 3. IDS 的基本概念
 
-### NIDS
+IDS Intrusion Detection System 用來監看網路流量或主機稽核紀錄，判斷是否有違反安全政策或攻擊行為。它主要是 detective control。
 
-- 監控網路流量，通常部署在特定 network segment。
-- 可檢查 packet payload 與 header。
-- 較適合偵測 DoS、掃描、可疑網路流量。
-- 題目問「real-time network traffic」通常選 **network-based IDS**。
+IDS 的兩大部署型態：
 
-### HIDS
+- NIDS Network-based IDS：監看網路區段流量。
+- HIDS Host-based IDS：安裝在重要主機上，監看本機事件。
 
-- 安裝在重要主機上。
-- 會分析 system logs、event logs、processes、resources。
-- 可偵測主機上的未授權變更。
-- 缺點：
-  - 會消耗主機資源。
-  - 可能對主機 OS 侵入性較高。
-- 題目問「review system and event logs」通常選 **host-based IDS**。
+NIDS 觀察封包 header、payload 與流量模式，因此適合偵測網路層面的攻擊、掃描、DoS 或異常服務。它通常放在 discrete network segment 上。
 
-### Alarm components
+HIDS 觀察主機內部活動，例如 system logs、event logs、processes、resources、檔案變更。它適合判斷攻擊是否成功，以及是否有未授權變更。
 
-- IDS alarm 的基本元件包含：
-  - Sensor
-  - Communication
-  - Enunciator
-- **Response** 不是 alarm 的 fundamental component。
+HIDS 的優點是能看到主機內部細節；缺點是可能消耗主機資源，且對 host OS 較侵入。
 
-## 4. IDS 分析方法
+Host-based intrusion detection 很依賴 audit trails，因為主機事件紀錄是它判斷異常的主要資料來源。
 
-### Signature-based / Knowledge-based
+IDS alarm 的基本組成常包含：
 
-- Signature-based detection 會比對已知攻擊樣式。
-- Knowledge-based IDS 使用已知攻擊、已知弱點與 exploit attempt 資料庫。
-- 優點：對已知攻擊準確。
-- 缺點：只能偵測已知 signature，對未知攻擊能力差。
-- 常見同義：
-  - Knowledge-based IDS = signature-based IDS
-  - Behavior-based IDS = statistical anomaly-based IDS
+- Sensor：偵測事件。
+- Communication：傳送警示或事件資料。
+- Enunciator：呈現警示。
 
-### Anomaly-based / Behavior-based
+Response 是事件後的處置流程，不是 IDS alarm 的基本組件本身。
 
-- 先建立正常行為 baseline，再偵測偏離正常模式的活動。
-- 可偵測未知攻擊或新服務突然出現。
-- Traffic anomaly-based IDS 可用來發現 unusual traffic behavior。
-- 缺點：false positive 較多，因為正常使用者與系統行為可能變化很大。
+## 4. Signature-based 與 Anomaly-based IDS
 
-### Signature vs Anomaly
+Signature-based detection 又稱 knowledge-based detection。它把系統或網路活動拿來比對已知攻擊特徵。
 
-| 類型 | 核心概念 | 優點 | 缺點 |
-| --- | --- | --- | --- |
-| Signature / Knowledge-based | 比對已知攻擊模式 | 已知攻擊準確 | 無法有效偵測未知攻擊 |
-| Anomaly / Behavior-based | 比對正常行為 baseline | 可發現未知異常 | false positive 多 |
+優點：
 
-## 5. Incident、Evidence 與 Forensics
+- 對已知攻擊準確。
+- 警示較容易解釋。
+- 誤報通常較低。
 
-### Incident reporting
+缺點：
 
-- 讓通報流程集中化，比較不會阻礙員工通報事件。
-- 會阻礙通報的原因：
-  - 害怕被捲入麻煩
-  - 害怕被誤會或指控
-  - 不知道公司政策與程序
+- 只能有效偵測已知 signature。
+- signature database 必須持續更新。
+- 新型攻擊、變形攻擊可能漏掉。
 
-### Evidence collection
+Anomaly-based detection 又稱 behavior-based 或 statistical anomaly-based detection。它先建立 normal baseline，再偵測偏離正常行為的事件。
 
-- 蒐證要避免改變原始證據。
-- 正確作法：
-  - 使用 write blocker
-  - 做 full-disk image
-  - 對 log 建立 message digest / hash
-- 會破壞蒐證完整性的行為：直接顯示資料夾內容，因為可能改變存取時間或系統狀態。
+優點：
 
-## 6. Honeypot 與 Hacker Tools
+- 可能發現未知攻擊。
+- 適合偵測異常流量、新服務突然出現、行為模式突變。
 
-### Honeypot
+缺點：
 
-- 主要目的不是單純誘捕，而是：
-  - 觀察攻擊是否正在發生
-  - 學習攻擊技術
-  - 讓網路防禦可以被強化
+- False positive 較高。
+- 正常業務變化也可能被視為異常。
+- baseline 品質會直接影響偵測效果。
 
-### Hacker tools
+Traffic anomaly-based IDS 特別適合「不知道攻擊長什麼樣，但要找 unusual traffic behavior」的情境。
 
-- 較常被駭客使用：
-  - Nessus
-  - SAINT
-  - Nmap
-  - L0phtCrack
-  - OphCrack
-  - John the Ripper
-- 比較不像駭客工具的答案：**Tripwire**。
+## 5. Incident Reporting 與事件處理
 
-## 7. Ethical Hacking 與 Penetration Testing
+Incident reporting 的重點是讓事件被集中、及時、完整地通報與追蹤。它通常包含：
 
-### 外部滲透測試廠商
+- 誰發現事件。
+- 事件發生時間與影響範圍。
+- 初步症狀與相關系統。
+- 已採取的處置。
+- 後續追蹤與結案紀錄。
 
-- 使用外部 penetration service firm 的合理理由：
-  - 較少公司內部偏見
-  - 可能更完整報告
-  - 可模擬外部威脅
-- 不應選的理由：**他們使用 highly talented ex-hackers**。
+中央化通報可以避免事件散落在個人信箱或口頭訊息中，提升可追蹤性與管理可見度。
 
-### Ethical hacking
+Incident tracking 與 audit trail control assessment 相關，但它不是用來直接評估 identification/authentication 的主要控制。
 
-- Ethical hacking 可使用可能影響系統的工具，但必須被授權、受控並避免負面修改目標系統。
-- 錯誤說法：ethical hackers never use tools that have the potential of affecting servers or services。
+Business Continuity Plan 應定期 review，至少每年一次，並在重大業務或系統變更後重新檢視。
 
-## 8. 其他常考點
+## 6. Evidence Collection 與 Forensics
 
-### OSI / Network layer
+數位證據處理的核心是不要改變原始證據，並能證明證據完整性。
 
-- Network layer 常見協定：
-  - IP
-  - OSPF
-  - RIP
-- HTTP 屬於 application layer，不是 network layer。
+常見做法：
 
-### Session layer
+- 使用 write blocker，避免寫入原始磁碟。
+- 製作 full-disk image，而不是直接在原機上分析。
+- 對映像檔與重要 log 建立 message digest / hash。
+- 維持 chain of custody，記錄誰在何時接觸證據。
 
-- Session layer 可建立 peer hosts 間的 logical persistent connection。
-- 題目中的模式選 **full duplex**。
+在遭攻擊的系統上直接「打開資料夾看內容」可能會改變存取時間、暫存資料或系統狀態，因此可能破壞證據收集流程。
 
-### Operational controls
+Forensics 的重點不是快速找答案，而是讓調查結果可被信任、可重現、可在管理或法律程序中使用。
 
-- Preventive operational controls：
-  - 保護 laptops、PCs、workstations
-  - 控制病毒
-  - 控制 media access and disposal
-- Security awareness and technical training 較偏 administrative / awareness，不是題目中的 preventive operational control。
+## 7. Honeypot 與安全工具
 
-### Software license violations
+Honeypot 是刻意設置的誘捕系統，用來觀察攻擊者行為、收集攻擊技術或讓攻擊者離開真正資產。它不應存放真實敏感資料，也不應成為攻擊其他系統的跳板。
 
-- 偵測軟體授權違規的最佳方式：定期掃描 PC，確認是否安裝未授權軟體。
+常見安全或攻擊測試工具：
 
-### BCP review
+- Nessus、SAINT：漏洞掃描。
+- Nmap：網路掃描與服務探測。
+- L0phtCrack、OphCrack、John the Ripper：密碼破解或稽核。
+- Tripwire：檔案完整性監控，不是 hacker tool 的典型代表。
 
-- Business Continuity Plan 至少 **每年檢視一次**。
+工具本身不是善惡的分界，使用目的、授權範圍與控制流程才是關鍵。
 
-## 9. 題號速查
+## 8. Ethical Hacking 與 Penetration Testing
 
-| 題號 | 關鍵答案 |
+Ethical hacking 是在授權範圍內模擬攻擊，找出實際可被利用的弱點。它必須有明確的 scope、時間、方法限制、通報窗口與停止條件。
+
+聘用 penetration testing firm 時，應看：
+
+- 技術能力與方法論。
+- 授權與保密條款。
+- 是否能控制測試對營運的影響。
+- 報告品質與修補建議。
+
+「使用很厲害的前駭客」不是必要條件。更重要的是專業、可控、合法、可審計。
+
+Ethical hacker 不代表永遠不能使用可能影響服務的工具，而是必須在授權範圍內控制風險，避免造成未被允許的破壞。
+
+## 9. OSI 與網路概念
+
+Network layer 常見協定包含 IP、OSPF、RIP。HTTP 是 application layer，不是 network layer。
+
+Session layer 負責建立、管理與結束主機間的邏輯連線。題目中常把 full duplex 放在 session 概念附近理解：雙方可同時雙向通訊。
+
+這些 OSI 概念的重點不是死背層級，而是理解安全控制或攻擊發生在哪一層。例如 NIDS 可能檢查網路封包，而應用層攻擊可能需要應用層日誌或 WAF 才看得清楚。
+
+## 10. Operational Controls 與日常管理
+
+Preventive operational controls 常見例子：
+
+- 保護 laptops、PCs、workstations。
+- 控制 media access and disposal。
+- 職責分離與作業流程控制。
+- 人員安全相關流程。
+
+Security awareness and technical training 很重要，但通常歸在 administrative / awareness 類型，而不是典型 preventive operational control。
+
+Software license violations 常透過檢查個人電腦或軟體資產清冊發現。這屬於資產管理、合規與營運控制的一部分。
+
+Account review 可以發現離職帳號、閒置帳號、權限過大或不再需要的存取權，但它不直接評估 user-chosen password strength。
+
+## 11. 概念對照速查
+
+| 概念 | 核心意思 |
 | --- | --- |
-| Q1 | Accountability 需要 audit mechanisms |
-| Q2 | Review audit records = detection |
-| Q3 | HIDS 依賴 audit trails |
-| Q4 | Controls effectiveness 由 systems auditor 衡量 |
-| Q5 | Invalid OLTP transactions 寫入報告並 review |
-| Q6 | Data owner 決定資料保護控制 |
-| Q8 | Signature-based = match predefined known attack events |
-| Q9 | IDS 監控 network traffic / host audit logs |
-| Q10 | NIDS 即時監控 network traffic |
-| Q11 | HIDS resident on critical hosts |
-| Q13 | NIDS payload/header review 可偵測 DoS |
-| Q14 | HIDS review system/event logs |
-| Q15 | HIDS drawback: invasive to host OS |
-| Q17 | Signature IDS 只能偵測已知 signatures |
-| Q18 | Statistical anomaly-based IDS 建立 normal profile |
-| Q19 | Anomaly IDS 容易 false positive |
-| Q20 | Display folder contents 破壞蒐證流程 |
-| Q21 | Unknown attacks / unusual traffic = traffic anomaly-based |
-| Q22 | HIDS 不會消耗大量資源是錯的 |
-| Q23 | Response 不是 IDS alarm fundamental component |
-| Q25 | HTTP 不是 Network layer |
-| Q26 | Session layer mode: full duplex |
-| Q27 | Tripwire 較不像 hacker tool |
-| Q28 | Centralized reporting 較不會阻礙 incident reporting |
-| Q29 | 按 patch process 更新不違反 due diligence |
-| Q30 | Honeypot 用於學習攻擊並強化防禦 |
-| Q31 | IS auditors 向 senior management 報告 controls effectiveness |
-| Q32 | IDS 常見實作：NIDS + HIDS |
-| Q33 | NIDS 監控 discrete network segment |
-| Q34 | Knowledge-based = signature; behavior-based = statistical anomaly |
-| Q35 | Knowledge-based IDS 用攻擊/弱點資料庫 |
-| Q36 | Knowledge-based IDS 比 behavior-based 常見 |
-| Q37 | Behavioral characteristics = anomaly detection |
-| Q38 | Assurance procedures 確保控制機制落實 policy |
-| Q39 | Known attack database = signature-based IDS |
-| Q40 | Detect intrusions 最有用的是 audit trails |
-| Q42 | Anomaly detection 較容易 false positive |
-| Q44 | Accountability 需要 audit trails |
-| Q45 | Ex-hackers 不是使用外部滲透廠商的有效理由 |
-| Q46 | Ethical hacker 不是永遠不能用可能影響服務的工具 |
-| Q48 | Accountability 透過 I&A 與 audit function |
-| Q49 | Tripwire 較不像 hacker tool |
-| Q50 | Normal behavior 變化大造成 anomaly IDS false positives |
-| Q51 | Self-audit vs independent audit = objectivity |
-| Q52 | Account review 不應判斷 user-chosen password strength |
-| Q53 | Due care 不相關：profit |
-| Q54 | Awareness/training 不是 preventive operational control |
-| Q55 | Incident tracking 不屬於 audit trail control assessment |
-| Q58 | 定期掃描 PC 偵測未授權軟體 |
-| Q59 | Clipping levels 設 baseline，超過門檻才記錄分析 |
-| Q60 | BCP 至少每年 review |
-
-## 10. 快速記憶
-
-- Accountability = I&A + audit trail。
-- IDS 最常考 NIDS vs HIDS。
-- Signature 會抓已知攻擊；Anomaly 會抓異常行為，但 false positive 多。
-- Audit trail 是偵測與問責的核心。
-- Data owner 決定資料保護需求；auditor 評估控制有效性。
-- 鑑識蒐證不要碰原始資料，先 image、hash、write blocker。
+| Accountability | I&A + access control + audit trail |
+| Audit trail | 把行為連回人、時間與資源 |
+| Audit review | Detective control |
+| Systems auditor | 衡量控制有效性 |
+| Data owner | 決定資料保護需求 |
+| Due care | 合理謹慎、善意行事 |
+| Due diligence | 持續查核與追蹤風險處理 |
+| IDS | 偵測違反安全政策的活動 |
+| NIDS | 監看網路流量 |
+| HIDS | 監看主機 log、process、resources |
+| Signature-based | 比對已知攻擊特徵 |
+| Anomaly-based | 比對 normal baseline 的偏離 |
+| False positive | 把正常事件誤判成攻擊 |
+| Write blocker | 避免修改原始證據 |
+| Full-disk image | 對副本分析，保護原始媒體 |
+| Hash / message digest | 證明證據完整性 |
+| Honeypot | 誘捕與觀察攻擊者 |
+| Tripwire | 檔案完整性監控 |
+| HTTP | Application layer |
+| IP / OSPF / RIP | Network layer |

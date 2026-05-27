@@ -1,375 +1,225 @@
-# Topic 1 考題重點整理
+# Topic 1 知識概念整理：存取控制、身分驗證與實體安全
 
-## 1. 存取控制核心觀念
+這份整理不是用來背題目答案，而是把題目背後的安全概念拆開。Topic 1 的主軸是「如何確認人是誰、能做什麼、如何留下責任紀錄，以及如何用邏輯與實體控制保護資產」。
 
-### CIA 與存取控制目的
+## 1. 安全目標與存取控制的基本觀念
 
-- 存取控制的主要目的：保護機密性、完整性、可用性，也就是 CIA。
-- 題目若問「控制資訊系統與網路存取是為了保護什麼」，優先選 Confidentiality, Integrity, Availability。
-- Identification and Authentication 是多數 access control system 的基石。
-- Identification 建立使用者身分與 accountability。
-- Authentication 驗證使用者是否真的是該身分。
+資訊安全常用 CIA 來描述保護目標：
 
-### Least Privilege 最小權限
+- Confidentiality 機密性：資料只讓被授權的人看到，避免 disclosure。
+- Integrity 完整性：資料維持正確、未被未授權修改，避免 alteration。
+- Availability 可用性：系統與資料在需要時可用，避免 destruction 或服務中斷。
 
-- 使用者只取得完成工作所需的最低權限。
-- 常見答案語氣：
-  - access only information for which they have a need to know
-  - only rights necessary to perform their work
-- Least privilege 可降低 authorization creep，也就是職務變動後權限越累越多。
+存取控制不是單一技術，而是一整套流程：
 
-### Need-to-know
+1. Identification：使用者宣稱自己的身分，例如輸入 user ID。
+2. Authentication：系統驗證這個身分是否可信，例如密碼、智慧卡、生物特徵。
+3. Authorization：確認這個身分可以做哪些事。
+4. Accountability：透過稽核紀錄，把行為連回特定身分。
 
-- 即使 clearance 足夠，也仍需有業務上的 need-to-know。
-- 在 MAC 題目中，clearance/classification 不等於自動可讀所有資料。
+Identification 建立「誰做的」這個基礎；Authentication 證明「這個人真的是他宣稱的人」；Authorization 才決定「他能不能做這件事」。
 
-### Separation of Duties 職責分離
+## 2. 最小權限、Need-to-know 與職責分離
 
-- 避免單一人員完成整個敏感流程。
-- 正確例子：operator 不可修改 system time。
-- 題目若出現「forcing collusion」通常是在描述職責分離或限制單一角色權限。
+Least privilege 最小權限是只給使用者完成工作所需的最低權限。它的目的不是讓管理變麻煩，而是降低誤用、濫用與帳號被盜時的影響範圍。
 
-### Accountability 可歸責性
+Need-to-know 是更細的資料存取判斷：即使使用者有足夠 clearance，也不代表他需要看所有同等級資料。常見於軍事、政府或高度分級環境。
 
-- 需要 audit mechanisms / audit trails。
-- 系統要能追蹤「誰做了什麼」。
-- Host-based IDS 最依賴 audit trails。
+Separation of duties 職責分離是避免單一人員能獨自完成高風險流程。例如操作者不應能任意修改系統時間，因為這會影響稽核紀錄可信度。職責分離的重點是讓濫用需要多人共謀，提高攻擊與舞弊成本。
 
-## 2. DAC、MAC、RBAC、Lattice
+Authorization creep 權限蔓延是人員換職位後舊權限未移除，導致權限越累越多。最小權限與定期權限審查就是用來處理這類問題。
 
-### DAC Discretionary Access Control
+## 3. 存取控制模型
 
-- 權限由 data owner 決定。
-- 在 discretionary access environment 中，授權他人存取資料的是 Data Owner。
-- Identity-based access control 是 DAC 的一種，根據個人身分給權限。
+DAC Discretionary Access Control 是由資料擁有者決定誰可以存取資料。因為權限由 owner 授予，所以彈性高，但也較依賴個人判斷。
 
-### MAC Mandatory Access Control
+MAC Mandatory Access Control 是由系統根據安全標籤與規則強制執行。使用者不能自行改變規則。典型元素包含：
 
-- 由系統根據 security labels 強制執行，不由資料擁有者任意授權。
-- Sensitivity label 通常包含：
-  - classification
-  - category set / compartment set
-- Object sensitivity label = single classification + compartment/category set。
-- Incomparable labels：兩個 label 的 category/compartment 彼此不完全包含。
+- Subject：要存取資料的人或程序。
+- Object：被存取的資料或資源。
+- Clearance：subject 的授權等級。
+- Classification：object 的分級。
+- Category / Compartment：資料所屬領域或隔間。
 
-### RBAC Role-Based Access Control
+MAC 的 sensitivity label 通常包含「單一 classification」與「category/compartment set」。兩個標籤如果彼此都不包含對方的所有 category，就可能是 incomparable。
 
-- 根據使用者在組織中的 role/title/job function 授權。
-- 題目若說 access controls are based on individual's role or title，答案是 RBAC。
+RBAC Role-Based Access Control 是依角色、職稱或職務功能給權限。它比逐一設定個人權限更適合組織管理，例如會計、系統管理員、客服主管各有不同權限集合。
 
-### Lattice-Based Access Control
+Lattice-based access control 用數學格狀結構描述等級與範圍，常用於多層級安全環境。概念上，subject 必須在足夠高的位置，才能存取對應 object。
 
-- 用上下界描述 subject/object 的安全層級。
-- 題目關鍵字：least upper bound、greatest lower bound。
-- Subject 的 upper bound 需要等於或高於 object 才能存取。
+Access control matrix 是把 subject 與 object 排成表格，格子裡寫明權限，例如 read、write、execute。它不是特定產品，而是一種描述權限關係的方法。
 
-### Access Control Matrix
+## 4. 經典安全模型
 
-- 用 subject/object 組合列出每個 subject 對各 object 的權限。
-- 題目若說「quickly summarize what permissions a subject has for various system objects」，就是 Access Control Matrix。
+Bell-LaPadula 主要處理機密性，常和軍事分級、多層級安全、Orange Book / TCSEC 放在一起理解。它關心的是資料不要流到低權限者手上。
 
-## 3. 安全模型
+Biba 主要處理完整性。它的方向與 Bell-LaPadula 類似但目標不同：不是防止機密外洩，而是避免低可信來源污染高可信資料。
 
-### Bell-LaPadula
+Clark-Wilson 也是完整性模型，但更偏商業交易環境。它強調 well-formed transactions、職責分離與受控資料項目：
 
-- 重點：機密性 Confidentiality。
-- 以 military classification 與 clearance 為基礎。
-- Orange Book / TCSEC 主要基於 Bell-LaPadula。
-- DoD multilevel security policy 的早期數學模型。
-- 不處理 integrity 或 conflict of interest。
-- 常見考法：
-  - The Orange Book is founded upon Bell-LaPadula.
-  - Military classification of data and people with clearances = Bell-LaPadula.
+- CDI：Constrained Data Item，受控資料。
+- IVP：Integrity Verification Procedure，完整性檢查程序。
+- TP：Transformation Procedure，允許修改 CDI 的受控程序。
 
-### Biba
+Brewer-Nash / Chinese Wall 用來處理利益衝突。使用者一旦接觸某一客戶或公司資料，就會被限制不能再接觸競爭方資料。
 
-- 重點：完整性 Integrity。
-- 與 Bell-LaPadula 常被拿來比較。
+Take-Grant 關心權限如何被授予與傳遞，常用來分析 subject 和 object 之間權限流動。
 
-### Clark-Wilson
+## 5. 身分驗證因素
 
-- 重點：商業完整性、well-formed transactions、separation of duties。
-- 關鍵元件：
-  - Constrained Data Item, CDI
-  - Integrity Verification Procedure, IVP
-  - Transformation Procedure, TP
+驗證因素分成三大類：
 
-### Brewer-Nash / Chinese Wall
-
-- 重點：conflict of interest。
-- 題目若問哪個模型處理利益衝突，通常選 Brewer-Nash。
-
-### Take-Grant
-
-- 偏權限轉移模型。
-- Topic 1 中主要作為干擾選項。
-
-## 4. Authentication 認證
-
-### 三大認證因素
-
-- Something you know：password、PIN、passphrase。
+- Something you know：密碼、PIN、passphrase。
 - Something you have：token、smart card。
-- Something you are：biometrics。
-- Two-factor authentication：使用兩種不同因素。
-- Robust authentication 常和 two-factor / stronger validation 相關。
+- Something you are：指紋、虹膜、視網膜等生物特徵。
 
-### Password / PIN / Passphrase
+Two-factor authentication 是同時使用兩種不同類型的因素。兩個密碼不算真正的雙因素，因為它們都屬於 something you know。
 
-- Password 的主要用途是 authenticate the user，不是 identify user。
-- PIN 是 confidential number。
-- Passphrase 通常比 password 長，系統可能轉換成 virtual password。
-- 好密碼特徵：長、複雜、不像字典字、不含明顯個資。
-- 系統產生密碼：
-  - 通常較難猜。
-  - 但使用者較難記。
-  - 若產生演算法外洩，整個系統可能受影響。
-  - 不應選「更容易受 brute force / dictionary attack」。
+Robust authentication 通常指較強的驗證方式，例如雙因素、動態密碼、challenge-response、持續驗證等。
 
-### Password Aging
+## 6. 密碼、PIN、Passphrase 與登入控制
 
-- 密碼變更週期取決於：
-  - 資訊敏感度/criticality
-  - 密碼使用頻率
+Password 的主要用途是 authenticate user，不是 identify user。User ID 用於 identification，password 用於 authentication。
 
-### Preventive Login Controls
+PIN 是 confidential number，通常搭配卡片或 token 使用。Passphrase 比一般 password 長，系統可能將它轉換成 virtual password 或雜湊值進行驗證。
 
-- Password aging、minimum password length、account expiration 都屬 preventive login control。
-- Last login message 是 detective/notification 性質，不是 preventive login control。
+密碼管理重點包含：
 
-### Password Sniffing 防護
+- 長度與複雜度降低猜測成功率。
+- password aging 根據資料重要性與使用頻率調整更換週期。
+- account expiration 可限制臨時帳號或離職帳號風險。
+- last login message 屬於偵測或通知性控制，不是預防性登入控制。
 
-- 防止 sniffing 造成密碼外洩：
-  - one-time passwords
-  - encryption
-- Static/reusable password 風險較高。
+防止 password sniffing 的核心是避免靜態密碼在網路上被重複使用。常見作法是加密通訊、使用 one-time password 或 challenge-response。
 
-### SSO Single Sign-On
+Single Sign-On 的優點是方便使用者與集中管理；風險是單一憑證若被攻破，攻擊者可取得更大的存取範圍。
 
-- 優點：convenience + centralized administration。
-- 主要風險：一組憑證洩漏後，攻擊者可能取得最大範圍的未授權存取。
+## 7. Kerberos、PKI 與 AAA
 
-## 5. Kerberos、PKI、AAA、Remote Access
+Kerberos 是 trusted third-party authentication protocol，主要依賴 symmetric cryptography。它用 tickets 讓服務端相信使用者已被可信第三方驗證，並可降低 replay attack 風險。
 
-### Kerberos
+Kerberos 的核心是 KDC，通常包含 Authentication Server 與 Ticket Granting Server。因為 KDC 持有重要金鑰，所以它本身必須被嚴格保護。
 
-- Trusted third-party authentication protocol。
-- 依賴 symmetric ciphers。
-- 可防 replay/playback attack。
-- KDC 持有使用者與服務的 cryptographic keys。
-- KDC / TGS / Authentication Server 是高價值目標，需防 physical attack 與 malicious code。
-- Kerberos ticket 類似 PKI 裡的 public-key certificate。
+Kerberos tickets 在信任模型中可類比 PKI 的 public-key certificates：兩者都讓其他系統信任某個身分或關係，但實作機制不同。
 
-### SESAME
+SESAME 可視為對 Kerberos 弱點的改良方向之一，使用 public key cryptography 協助分送 secret keys，並提供更多 access control 支援。
 
-- 用來改善 Kerberos 一些弱點。
-- 使用 public key cryptography 來分配 secret keys，並提供額外 access control support。
+Smart card 在 PKI 中常用來安全保存並使用使用者 private key，重點是 tamper-resistant、可攜帶、可在卡片內部執行金鑰操作。
 
-### PKI 與 Smart Card
+AAA 代表：
 
-- Smart card 在 PKI 中的主要角色：
-  - tamper-resistant
-  - mobile storage
-  - 使用者 private key 的儲存與應用
+- Authentication：驗證身分。
+- Authorization：決定權限。
+- Accounting：記錄使用情況與責任歸屬。
 
-### RADIUS / TACACS+ / DIAMETER
+RADIUS 使用 UDP。RADIUS server 對 Access-Request 的典型回應是 Access-Accept、Access-Reject、Access-Challenge，不是 Access-Granted。TACACS+ 與 DIAMETER 也是常見 AAA 相關協定。
 
-- AAA = Authentication, Authorization, Accounting。
-- Administration 不是 AAA 的 A。
-- RADIUS client/server 使用 UDP。
-- RADIUS 對 Access-Request 的回應包含：
-  - Access-Accept
-  - Access-Reject
-  - Access-Challenge
-- Access-Granted 不是標準 RADIUS response。
-- 初版 TACACS 使用 UDP。
+EAP 是可擴充的驗證框架，支援 PPP 等環境中的多種驗證方法，例如明文密碼、challenge-response 或其他對話式流程。
 
-### EAP
+## 8. 遠端存取安全
 
-- Extensible Authentication Protocol。
-- PPP 的認證框架，支援多種認證機制，例如 cleartext password、challenge-response、arbitrary dialog sequences。
+遠端存取的基本安全目標是：
 
-### Remote Access
+- 可靠驗證使用者與系統。
+- 保護傳輸中的機密資料。
+- 能管理使用者對系統與網路資源的存取。
 
-- 遠端存取安全目標包含：
-  - reliable authentication of users and systems
-  - protection of confidential data
-  - manageable access control
-- Automated login for remote users 不是安全目標。
-- 外部透過 Internet 存取 LAN 前，優先考慮 proper authentication options。
-- IP-based authentication 對 mobile users 不友善。
-- 消除 dial-up RAS hacking vector 的較佳方式：將 RAS 放在 firewall 外，合法使用者仍需通過 firewall 認證。
+自動登入不是安全目標，因為它可能繞過驗證與責任追蹤。
 
-## 6. Biometrics 生物辨識
+IP-based authentication 對 mobile users 不友善，因為使用者位置與 IP 可能經常變動。遠端存取應優先考慮適當的 authentication options，而不是只依賴來源位址。
 
-### 基本觀念
+對舊式 dial-up RAS，若要降低被當成攻擊入口的風險，可把 RAS 放在 firewall 外側，讓合法使用者仍必須通過 firewall 驗證。
 
-- Biometrics 使用 fingerprint、retina、iris 等生理或行為特徵認證。
-- 真正 positive identification 主要建立在 physical attributes。
-- 常見可用部位：hands、face、eyes。
-- 本地冒名 masquerading attack 最佳防護：biometrics。
+## 9. 生物辨識
 
-### Retina vs Iris
+Biometrics 使用人的物理或行為特徵進行驗證，例如 fingerprint、retina、iris、hand geometry。它特別適合防止本機冒用，因為攻擊者不能只靠知道密碼或偷到卡片。
 
-- Retina scan 測量眼底血管圖案：pattern of blood vessels at the back of the eye。
-- Iris scanner 安裝問題：光學單元需避免陽光直接照進 aperture。
-- Retina scan 使用者接受度最低，因為侵入感較高。
+Retina scan 掃描眼底血管圖樣，通常準確但侵入感高、接受度低。Iris scan 掃描虹膜圖樣，設備安裝時要注意光學 aperture，例如避免陽光直接照入。
 
-### FAR / FRR / CER
+常見評估指標：
 
 - FAR False Acceptance Rate：錯誤接受未授權者。
-- FRR False Rejection Rate：錯誤拒絕合法使用者。
-- 提高系統敏感度會更嚴格，通常導致 FRR 上升。
-- CER / Crossover Error Rate 可快速比較生物辨識裝置準確度。
-- CER 越低，準確度越好。
-- 對 access control 來說，最應避免 Type II Error，也就是 false acceptance。
+- FRR False Rejection Rate：錯誤拒絕合法者。
+- CER Crossover Error Rate：FAR 與 FRR 交會點，常用來比較設備準確度，越低通常越準。
 
-### 生物辨識選型因素
+提高系統敏感度會讓系統更挑剔，通常降低 FAR 但提高 FRR。對存取控制而言，最重要的是避免 false acceptance，因為那代表未授權者被放行。
 
-- 最重要特性：accuracy。
-- 也需考慮 enrollment time、throughput rate、acceptability。
-- 題目中可接受 throughput rate：約 10 subjects per minute。
-- 成本 cost 不屬於題目所問的「security characteristic」。
+除了 accuracy，也要考慮 enrollment time、throughput rate、user acceptance、使用環境與成本。成本是採購因素，但不是生物辨識本身的安全特性。
 
-## 7. Physical Security 實體安全
+## 10. 實體安全
 
-### Physical Controls
+Physical controls 包含 guards、locks、lighting、fences、facility construction、server room security、cable protection、magnetic door/window switches、badges 等。Passwords、access profiles、user IDs 屬於 logical controls。
 
-- Guards、locks、lighting、fences、facility construction materials、server room security、cable protection、magnetic door/window switches。
-- Passwords 是 logical control，不是 physical access control。
-- Employee badge 偏實體控管，不是 logical control。
-- Training 是 administrative control，不是 physical control。
+Guards 的價值在於 human judgment。當情境需要判斷、辨識異常或處理例外時，人員比單純設備更有彈性。
 
-### Guards
+CPTED Crime Prevention Through Environmental Design 是透過環境設計影響人的行為，降低犯罪機會。例如視線清楚、動線控制、照明與區域界線。
 
-- Guard 適合需要 human judgment / discriminating judgment 的情境。
-- 最後一道實體防線：people。
+Facility vulnerability assessment 可看 inspection、history of losses、existing security controls；security budget 不是直接評估脆弱性的依據。
 
-### CPTED
+Alarm 常見類型中，auxiliary station alarm 會把警報接到當地 municipal fire/police alarm circuits。
 
-- Crime Prevention Through Environmental Design。
-- 透過實體環境設計影響人類行為，降低犯罪。
+Door lock 的 fail-safe / fail-secure 要看安全與生命安全的取捨：
 
-### Facility Vulnerability Assessment
+- Fail-safe：故障或斷電時可安全離開，常用於有人駐守設施的門。
+- Fail-secure：故障或斷電時維持上鎖，重點是防止未授權進入。
 
-- 可用 inspection、history of losses、security controls 評估。
-- Security budget 不是直接評估 vulnerability 的方法。
+Vibration detection 常見問題是容易受非攻擊因素干擾，例如天氣、車輛、環境震動。
 
-### Alarm Types
+## 11. 控制分類
 
-- Auxiliary station alarm：資料中心警報自動傳到當地 municipal fire/police alarm circuit，再轉給警消與總部。
-- 題目關鍵字：local municipal fire or police alarm circuits。
+依功能可分：
 
-### Door Locks
+- Preventive control：阻止事件發生，例如 access control、locks、minimum password length。
+- Detective control：發現已發生或正在發生的事件，例如 audit review、IDS、camera monitoring。
+- Corrective control：事件後修復或恢復，例如 restore backup。
 
-- 有人值守設施的 automatic locks 應設為 fail-safe，確保緊急時可逃生。
-- Fail-secure 通常偏保護資產，但可能影響人員安全。
+依型態可分：
 
-### Perimeter Detection
-
-- Vibration detection devices 常見問題：容易受非攻擊性干擾影響。
-
-## 8. Controls 分類與配對
-
-### Preventive / Detective
-
-- Preventive control：防止事件發生。
-- Detective control：偵測並揭露事件。
-- Audit record review 是 detection。
-- Timely review of access audit records = detection。
-
-### Administrative / Technical / Physical
-
-- Administrative：政策、流程、訓練、職責分離。
-- Technical / Logical：access control software、encryption、audit trail、IDS。
+- Administrative / Management：政策、流程、訓練、權限審查。
+- Technical / Logical：OS access control、encryption、audit trail、IDS。
 - Physical：guards、locks、fences、lighting、badges、doors。
 
-### 常見配對
+常見配對：
 
-- Preventive/Administrative：soft mechanisms，支援 access control 目標，例如政策、程序、職責分離。
-- Preventive/Technical：OS、software、hardware 中的 encryption / access control。
-- Detective/Technical：IDS、自動從 audit trail 產生 violation report。
-- Detective/Physical：sensor、camera、alarm，需要人員判斷是否真有威脅。
+- Preventive administrative：政策、程序、職責分離、權限核准。
+- Preventive technical：加密、存取控制軟體、身份驗證機制。
+- Detective technical：IDS、稽核紀錄自動產生違規報告。
+- Detective physical：感測器、攝影機、警報，通常需要人判斷是否是真正威脅。
 
-### Nonrepudiation
+Nonrepudiation 不可否認性通常歸類為 logical control，因為它依靠技術證據讓行為者難以否認其行為。
 
-- Nonrepudiation 最佳分類：logical control。
+## 12. 稽核與評估
 
-## 9. Audit、IDS、Assessment
+Audit trails 是 accountability 的核心，因為它把行為、時間、身分與資源連在一起。Host-based IDS 很依賴 audit trails / event logs。
 
-### Clipping Level
+Timely review of access audit records 是 detective control，因為它用來發現問題，不是事前阻止。
 
-- Clipping level：在產生 violation record 前，允許或忽略的違規次數門檻。
-- 題目常問「number of violations accepted/forgiven before record is produced」。
+Clipping level 是在產生違規紀錄前可容忍或忽略的違規次數。設定太低會造成雜訊太多，太高則可能漏掉攻擊。
 
-### Vulnerability Assessment
+Network-based vulnerability assessment 通常是 active vulnerability assessment，因為它會主動探測系統與網路。
 
-- Network-based vulnerability assessment 也稱 active vulnerability assessment。
+評估 identification and authentication controls 時，會看授權使用者清單、密碼更換、閒置帳號停用等。Incident reporting process 重要，但它不是 I&A 控制的核心。
 
-### 評估 I&A Controls
+評估 physical access controls 時，會看敏感區域名單是否審查、進入 computer room / media library 是否需 key 或 access device、訪客是否登記與陪同。OS 是否防止繞過 security software 屬於 logical/technical control，不是 physical access control。
 
-- 適合檢查：
-  - 是否維護並核准授權使用者清單。
-  - 密碼是否至少每 90 天或必要時更換。
-  - 不活躍 user IDs 是否停用。
-- Incident reporting process 比較不是直接評估 identification/authentication control 的問題。
+## 13. 概念對照速查
 
-### 評估 Physical Access Controls
-
-- 適合檢查：
-  - 管理階層是否定期審查有實體存取權的人員。
-  - 進入 computer room / media library 是否需要 key 或 access device。
-  - 訪客是否簽到且有人陪同。
-- OS 是否防止繞過 security software 是 logical/technical control，不是 physical access control。
-
-## 10. 易混淆陷阱
-
-- Authentication 驗證身分；Identification 宣告身分；Authorization 授權能做什麼。
-- Password 用來 authenticate，不是 identify。
-- Data Owner 授權 DAC 存取，不是 security manager。
-- MAC label 包含 classification + category/compartment set。
-- Bell-LaPadula 管 confidentiality，不管 integrity/conflict of interest。
-- Clark-Wilson 管 commercial integrity，不是 confidentiality。
-- RADIUS 是 AAA，不是 Administration。
-- RADIUS 用 UDP；Access-Granted 不是標準回應。
-- SSO 方便但單點憑證洩漏風險大。
-- Biometrics 提高敏感度會提高 FRR，不是 FAR。
-- CER 越低越準。
-- Retina scan 看眼底血管；iris scan 要注意光學安裝與陽光。
-- Password、encryption、access profile 是 logical controls；badges/locks/guards 是 physical controls。
-- Last login message 不是 preventive login control。
-- Audit trails / audit review 多半是 detective control。
-
-## 11. 快速背誦表
-
-| 關鍵字 | 答案方向 |
+| 概念 | 核心意思 |
 | --- | --- |
-| Data owner grants access | DAC |
-| Classification + category set | Sensitivity label |
-| Military classification / clearance | Bell-LaPadula |
-| Orange Book / TCSEC | Bell-LaPadula |
-| Confidentiality model | Bell-LaPadula |
-| Integrity model with CDI/IVP/TP | Clark-Wilson |
-| Conflict of interest | Brewer-Nash |
-| Subject/object permissions table | Access Control Matrix |
-| Least upper bound / greatest lower bound | Lattice |
-| Trusted third-party authentication | Kerberos |
-| Symmetric ciphers / tickets / replay protection | Kerberos |
-| Public key certificates analogy | Kerberos tickets |
-| Authentication, Authorization, Accounting | AAA |
-| RADIUS transport | UDP |
-| PPP authentication framework | EAP |
-| Longer password-like phrase | Passphrase |
-| Violations before logging | Clipping level |
+| Identification | 宣稱身分，建立 accountability 的起點 |
+| Authentication | 驗證身分，密碼主要做這件事 |
+| Authorization | 決定能做什麼 |
+| Accountability | 用 audit trail 把行為連回身分 |
+| DAC | Data owner 授權 |
+| MAC | 系統依 label 與規則強制控管 |
+| RBAC | 依角色或職務給權限 |
+| Bell-LaPadula | 機密性、多層級安全、軍事分級 |
+| Biba | 完整性 |
+| Clark-Wilson | 商業完整性、受控交易、職責分離 |
+| Brewer-Nash | 利益衝突 |
+| Kerberos | trusted third-party、symmetric crypto、tickets |
+| AAA | Authentication、Authorization、Accounting |
+| CER | 比較生物辨識準確度，越低通常越好 |
 | Audit review | Detective control |
-| IDS and audit violation reports | Detective/Technical |
-| Cameras/sensors with human judgment | Detective/Physical |
-| Policies/procedures | Administrative |
-| Encryption/access control software | Technical/Logical |
-| Guards/locks/fences | Physical |
-| CER lowest | Most accurate biometric |
-| Higher sensitivity | Higher FRR |
-| Most critical biometric trait | Accuracy |
-| Most intrusive / lowest acceptance | Retina scan |
-| Door in manned facility | Fail-safe |
-
+| Guards/locks/fences | Physical controls |
+| Encryption/access control software | Technical/logical controls |

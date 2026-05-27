@@ -1,443 +1,244 @@
-# Topic 2 考題重點整理
+# Topic 2 知識概念整理：可信系統、系統安全架構與開發治理
 
-## 1. Orange Book、TCSEC 與 Assurance
+Topic 2 的核心是「系統本身怎樣被設計成可信」，包含 Orange Book / TCSEC、TCB、Reference Monitor、作業系統保護、資料殘留、SDLC、資料庫安全與組織治理。它比 Topic 1 更偏系統架構與管理流程。
 
-### Orange Book / TCSEC
+## 1. Orange Book / TCSEC 與 Assurance
 
-- Orange Book 主要評估可信系統的安全能力，偏重 confidentiality。
-- ITSEC 補足 Orange Book 較不足的 integrity 與 availability。
-- TCSEC 中常見概念：
-  - Trusted Computing Base, TCB
-  - Reference Monitor
-  - Security Kernel
-  - Assurance
-  - Covert Channel Analysis
-  - Configuration Management
+Orange Book / TCSEC 主要關注可信系統如何保護 confidentiality，尤其是多層級安全環境。它的背景與 Bell-LaPadula 有密切關係。
 
-### System Assurance 兩大類
+TCSEC 常見概念包含：
 
-- Orange Book 的兩種 system assurance：
-  - Operational Assurance
-  - Life-Cycle Assurance
+- TCB Trusted Computing Base。
+- Reference Monitor。
+- Security Kernel。
+- Assurance。
+- Covert Channel Analysis。
+- Configuration Management。
 
-### Operational Assurance
+Orange Book 把 system assurance 分成兩大類：
 
-- 關注系統運作時是否能正確執行安全功能。
-- 常見要求包含：
-  - System Architecture
-  - System Integrity
-  - Covert Channel Analysis
-  - Trusted Facility Management
-  - Trusted Recovery
+- Operational Assurance：系統運作時是否能安全、可靠地執行。
+- Life-Cycle Assurance：系統從設計、開發、維護到變更是否被控制。
 
-### Life-Cycle Assurance
+Operational Assurance 常涉及 system architecture、system integrity、covert channel analysis、trusted facility management、trusted recovery。
 
-- 關注系統從設計、開發、維護到發佈的整個生命週期。
-- Topic 2 題目重點：
-  - Configuration Management
-  - Trusted Facility Management
-- Configuration Management 控制並稽核 TCB 的變更。
-- 主要目標是 system stability。
+Life-Cycle Assurance 常涉及 configuration management、trusted distribution、設計與測試流程。重點是控制系統整個生命週期，而不是只看上線當下。
 
-### System Integrity
+ITSEC 補足 Orange Book 對 integrity 與 availability 的不足，因此不只關注 confidentiality。
 
-- 指 hardware / firmware 有定期測試，確認其功能正確。
-- 題目若出現「periodically validate correct operation of on-site hardware and firmware elements of the TCB」，答案是 System Integrity。
+## 2. TCB、Security Perimeter、Reference Monitor、Security Kernel
 
-### Data Hiding
+TCB 是系統內所有保護機制的總和，包含硬體、韌體與軟體。只要某個元件會影響安全決策或保護能力，就可能屬於 TCB。
 
-- 在 B3 / A1 等級中，data hiding 指系統功能分層。
-- 每一層只能存取該層允許的資料，不能跨層任意存取。
+Security Perimeter 是 TCB 與非 TCB 的邊界。邊界內是可信元件，邊界外是不被信任或不需信任的元件。
 
-## 2. TCB、Reference Monitor、Security Kernel
+Reference Monitor 是抽象概念：所有 subject 存取 object 的請求，都必須由它檢查是否允許。它是存取控制決策的守門機制。
 
-### Trusted Computing Base, TCB
+Security Kernel 是 Reference Monitor 的實作，位於 TCB 核心。它必須符合三個特性：
 
-- TCB 是電腦內所有保護機制的總和，包含 hardware、firmware、software。
-- 它負責支撐與執行安全政策。
-- 題目若問「sum of protection mechanisms inside the computer」，答案是 TCB。
+- Completeness：所有存取都必須經過它。
+- Isolation：它本身不能被未授權修改或繞過。
+- Verifiability：它足夠小且清楚，可以被測試與驗證。
 
-### Security Perimeter
+Trusted system 不是「完全安全」的意思，而是有足夠、有效、可獨立驗證的證據，證明它能執行宣稱的安全功能。
 
-- Security perimeter 是一道想像線，分隔 TCB 中可信元件與不可信元件。
+## 3. System Integrity、Configuration Management 與 Data Hiding
 
-### Reference Monitor
+System Integrity 在 TCSEC 中常指硬體與韌體的週期性驗證，確認 TCB 的 on-site hardware/firmware 正常運作。
 
-- Reference Monitor 會比較 subject 與 object 的安全標籤，並決定是否允許存取。
-- 它是 access control decision 的核心概念。
-- Reference Validation Mechanism 實作的就是 Reference Monitor concept。
+Configuration Management 的重點是控制與稽核 TCB 的變更。目標是 system stability：知道系統目前狀態、誰改了什麼、改動是否被核准。
 
-### Security Kernel
+Data hiding 是系統分層與隔離的概念。某一層的功能不應任意存取其他層資料，藉此限制資訊外洩與未授權干擾。
 
-- Security Kernel 是 TCB 中實作 Reference Monitor 的硬體、韌體與軟體機制。
-- 它不是純概念，而是實際負責執行安全政策的元件集合。
-- Security Kernel 必須符合三個條件：
-  - Completeness：所有存取都必須經過它。
-  - Isolation：不能被竄改，且與其他程序隔離。
-  - Verifiability：足夠小且可測試、可驗證。
+## 4. 作業系統保護架構
 
-### Trusted System
+Ring Architecture 使用多個執行層級或 privilege levels 隔離權限。Ring 0 通常最有權限，應只放最可信的核心功能。
 
-- Trusted system 需要能執行安全政策，並提供可獨立驗證的證據，證明安全機制足夠且有效。
-- 題目中若提到「efficient and reliable」不一定是 trusted system 的定義重點；重點是 sufficient、effective、independently verifiable evidence。
+Process Isolation 防止一個 process 讀寫另一個 process 的記憶體或資源。它是多使用者、多程序系統的基本安全能力。
 
-## 3. 系統架構與處理器概念
+Protection Domain 是一組 subject 可存取的 object 與權限邊界。不同 domain 的存在，是為了限制執行干擾與權限擴散。
 
-### Ring Architecture
+Object Reuse 是資源重複使用時的資料殘留問題。例如記憶體、buffer、磁碟區塊、印表機記憶體若沒有清除，下一個使用者可能看到前一個使用者的資料。
 
-- 超過兩個 execution domains 或 privilege levels 的架構稱為 Ring Architecture。
-- Ring 0 通常是最高權限層。
+Memory addressing 概念：
 
-### Process Isolation
+- Direct addressing：直接指定實體或邏輯位置。
+- Indirect addressing：透過指標或中介位置找到目標資料。
 
-- 防止一個 process 存取另一個 process 資料的是 Process Isolation。
-- 題目若說「processes constrained so each cannot access objects outside permitted domain」，就是 secure system 的邏輯隔離。
+處理器架構概念：
 
-### Protection Domain
+- Pipelining：把指令處理拆成階段，提高吞吐量。
+- CISC：複雜指令集，單一指令可做較多事。
+- VLIW：由編譯器安排多個操作並行執行。
 
-- Protection Domain 用來保護程式不受未授權修改或 execution interference。
+Fault-tolerant system 能在故障發生時持續運作。Fail-safe 則是在故障時進入較安全狀態。兩者都和可用性與安全狀態有關，但重點不同。
 
-### Memory Segmentation / Object Reuse
+## 5. Covert Channel、Residual Data 與媒體清除
 
-- 若 OS 允許 memory/object 被多個使用者或程序依序使用，但沒有清除，就會造成 residual data disclosure。
-- Object reuse 重點：重新分配前要清除記憶體、buffer、printer/terminal local memory。
-- 單純 deleting files 不足以處理 object reuse。
+Covert channel 是利用系統原本不是用來傳資料的機制偷偷傳遞資訊。常見類型：
 
-### Memory Addressing
+- Storage covert channel：透過儲存狀態或資源狀態傳訊。
+- Timing covert channel：透過時間差、延遲、頻率傳訊。
 
-- Direct addressing：指令中直接指定實際記憶體位置。
-- Indirect addressing：指令指定的位置內，存放真正目標位置的位址。
+Residual data / Remanence 是資料在刪除或釋放後仍殘留在媒體或記憶體中的現象。這是 object reuse 與 media reuse 的核心風險。
 
-### Processor / Architecture
+Clearing 與 Purging 的差異：
 
-- Pipelining：重疊不同指令的步驟以提升效能。
-- VLIW：compiler 或 pre-processor 將指令拆成可同時執行的基本操作。
-- CISC：源於早期 instruction fetch 是最長週期的設計背景。
+- Clearing：讓一般系統工具或鍵盤攻擊無法取得資料。
+- Purging：讓更高階的實驗室攻擊也難以復原資料。
 
-### Fault / Failure
+Purging 的強度高於 clearing。
 
-- Fault-tolerant system：能偵測 fault，並修正或繞過 fault 繼續運作。
-- Fail-safe：系統失敗或偵測到故障時，自動讓系統處於安全狀態。
+Degaussing 使用強磁場破壞磁性媒體資料，適用於磁帶、磁片、磁性硬碟等。它不適合 CD-ROM 或唯讀光學媒體；這類媒體通常要 physical destruction。
 
-## 4. Covert Channel 與資料外洩
+## 6. CIA 在系統層的意義
 
-### Covert Channel
+Confidentiality 是防止未授權 disclosure。存取控制、加密、分級標籤都是常見手段。
 
-- Covert channel 是非預期的通訊路徑，且不受正常安全機制保護。
-- 兩大類：
-  - Storage covert channel
-  - Timing covert channel
+Integrity 是防止未授權 alteration，並維持內外一致性。例如交易資料不能被任意改動，系統狀態要與業務規則一致。
 
-### Residual Data / Remanence
+Availability 是確保資源在需要時可用。備援、容錯、災難復原、容量規劃都與 availability 有關。
 
-- Remanence 是媒體刪除後仍殘留的資料。
-- Media reuse 的主要問題是 data remanence。
-- Shared object/memory 沒有 refresh，最可能造成 residual data disclosure。
+IPsec 可在 IP 層提供機密性、完整性、驗證與防重放等保護，但它不會自動解決所有應用層安全問題。
 
-### Clearing vs Purging
+## 7. 組織角色與安全治理
 
-- Clearing：讓資料無法被一般 keyboard attack 還原。
-- Purging：讓資料無法被 laboratory attack 還原。
-- Purging 強度高於 clearing。
+Management team 對組織資訊系統安全負最終責任。安全責任不能完全外包給 IT 或安全部門。
 
-### Degaussing / Destruction
+Senior management 通常負責決定資訊與系統需要的保護程度，因為這涉及風險承擔與資源配置。
 
-- Degaussing 適用磁性媒體，例如 floppy disk、video tape、magnetic hard disk。
-- Read-only media 不能靠 degaussing 清除。
-- CD-ROM 最安全處置方式：physical destruction。
+Data / Information Owner 最了解資料價值、敏感度與業務影響，因此最適合決定資料保護需求與適當控制。
 
-## 5. CIA 與基本安全性質
+Security analyst 常是控制評估者與顧問，協助分析風險與建議控制。Security officer 通常負責推動安全計畫、政策與合規。
 
-### Confidentiality
+Information security policy 是高層次方向，說明組織的安全目標、責任、規範基礎與行為要求。它不應寫成太細的操作步驟。
 
-- 防止資訊被未授權的人或程序揭露。
-- Opposite of confidentiality：disclosure。
-- 「只有應該存取資料的人能存取」是 confidentiality。
+Policy、Standard、Guideline、Procedure 的差異：
 
-### Integrity
+- Policy：高層原則與要求，說明必須遵守什麼。
+- Standard：具體、強制的最低要求。
+- Guideline：建議做法，有彈性。
+- Procedure：逐步操作指引。
 
-- 確保訊息送出與收到一致，未被有意或無意修改。
-- Opposite of integrity：alteration。
-- 常見 integrity goals：
-  - 防止未授權使用者修改。
-  - 防止授權使用者不當修改。
-  - 維持 internal / external consistency。
-- 「防止不當揭露路徑」是 confidentiality，不是 integrity goal。
+Security planning 通常先建立目標、列出假設、評估替代方案。建立 audit function 很重要，但不一定是初期規劃的第一步。
 
-### Availability
+## 8. Security by Design 與 SDLC
 
-- 授權實體需要時，系統或資源可依效能規格被存取與使用。
-- Opposite of availability：destruction。
-- Network availability 直接影響 availability。
+安全最有效、也最經濟的方式，是在系統設計一開始就納入，而不是系統完成後再補。
 
-### IPsec
+Security by Design 的意思是把安全視為整體系統設計的一部分，包括需求、架構、資料流程、權限、稽核、錯誤處理與維運。
 
-- IPsec 可提供資料機密性、端點身分確認、流量封包交換計數等特性。
-- IPsec 不保證資料按照送出順序抵達。
+Risk analysis 通常在 project initiation and planning 階段進行，因為早期了解風險才能影響設計選擇。
 
-## 6. 管理責任、政策與控制
+Security requirements 應在 functional design analysis and planning 階段被明確化。Security department 應參與 requirements development，協助把安全政策轉成需求。
 
-### 管理階層責任
+User involvement 很重要，因為系統安全不能脫離業務目標。使用者參與 specification and acceptance，能提高系統符合實際需求的機率。
 
-- 組織內資訊系統安全的最終責任：Management team。
-- 決定資訊系統資源保護等級的主要責任：Senior Management。
-- 確保 IT 系統與資料 CIA 控制到位：System and Information Owners。
-- 決定資料保護所需技術控制：Data or Information Owner。
+常見開發方法：
 
-### Security Analyst / Security Officer
+- RAD：快速應用開發，重視快速迭代。
+- Prototyping：用原型確認需求與介面。
+- Spiral model：風險導向的反覆模型，可視為 meta-model。
+- CMM：描述軟體流程成熟度。
 
-- Security analyst 在開發或採購專案中的角色：control evaluator & consultant。
-- 資安政策開發最適合由 Security Officer 監督。
+Verification、Validation、Acceptance、Certification、Accreditation：
 
-### Information Security Policy
+- Verification：確認系統是否依規格正確建置。
+- Validation：確認系統是否滿足使用者與業務需求。
+- Acceptance：使用者或業務方接受系統。
+- Certification：技術與安全評估，確認控制是否符合要求。
+- Accreditation：管理層正式授權系統投入運作。
 
-- 有效政策應：
-  - 被所有利害關係人理解與支持。
-  - 指定責任與權限。
-  - 包含 separation of duties。
-  - 能適應環境變化。
-- 不應只有 short- to mid-term focus。
-- 政策主要目的：告知 users、administrators、managers 保護技術與資訊資產的義務。
-- 「詳細規定硬體與軟體如何使用」比較像 standard/procedure，不是 policy 的核心定義。
+## 9. 測試、變更控制與備份
 
-### Policy / Standard / Guideline / Procedure
+Debugging 是找出並修正 coding flaws。
 
-- Policy：高層原則與要求。
-- Standard：必須遵守的具體規範。
-- Guideline：建議性作法。
-- Procedure：逐步操作指示，用來滿足控制要求。
+White-box testing 了解內部邏輯與程式結構，從內部測試。Black-box testing 不看內部實作，只從輸入輸出與外部行為測試。
 
-### Security Planning
+Regression testing 是變更後重跑測試，確認新修改沒有破壞既有功能。
 
-- 初步安全規劃包含：
-  - establish objectives
-  - list planning assumptions
-  - determine alternate courses of action
-- Establish a security audit function 不是 preliminary planning step。
+Security testing 是檢查系統安全控制與安全缺陷，例如 access controls 是否有效。
 
-### IT Security Organization
+測試資料不應直接使用未遮蔽的 live data。若需要接近真實負載，應使用 sanitization 後的資料。
 
-- 資安組織較理想的定位：由 Chief Security Officer 領導，直接向 CEO 報告。
-- IT security measures 應依組織安全目標量身打造，不是越複雜越好。
+Change control 是預防性控制，重點包含：
 
-## 7. SDLC 與系統開發安全
+- 程式設計師不應直接存取 production data。
+- 變更要提出 request、核准、測試與記錄。
+- emergency change 也要有事後審查。
 
-### Security by Design
+Source comparison program 可偵測程式碼是否被未授權修改，較偏 detective control。
 
-- 應從一開始就把必要安全性設計進系統。
-- 在系統原始設計階段加入安全最有效、也最經濟。
-- Security should be treated as an integral part of overall system design。
-- Security department 應在 requirements development 階段就介入。
+Backup 的關鍵是先決定哪些 records 需要備份，再決定頻率、保留期、媒體、離站保存與復原測試。
 
-### Risk Analysis / Risk Reduction
+## 10. Database Security
 
-- Risk analysis 最適合在 project initiation and planning 階段套用。
-- SDLC 中 risk reduction 應平均套用到所有階段。
-- Due care / due diligence 通常在 software plans and requirements 階段處理。
+資料庫安全不只靠登入權限，也要處理查詢結果與資料組合造成的風險。
 
-### Security Requirements
+Perturbation 是加入雜訊或調整資料，避免使用者從統計結果還原敏感資料。
 
-- IT system life cycle 中，security requirements 通常在 functional design analysis and planning 發展。
-- 建立良好 security policy 作為設計基礎，最關心的是 initiation phase。
-- Operation/Maintenance phase 重點之一：維持使用者與程序的 authentication，確保正確 access control decision。
+Cell suppression 是隱藏特定敏感儲存格或結果。
 
-### User Involvement
+Partitioning 是把資料分割到不同區域，降低單一查詢取得過多敏感資訊的機會。
 
-- 系統開發最能確保符合 business objectives：user involvement in specification and acceptance。
-- 資訊系統常無法滿足使用者需求的主因：使用者參與需求定義不足。
-- SDLC 方法不足的最大風險：系統無法滿足 business and user needs。
+Aggregation 是多個低敏感資料組合後形成更高敏感資訊。例如單筆資料不敏感，但大量資料合併後可推導出機密。
 
-### RAD / Prototyping / Spiral
+Inference 是透過合法可見資料推論出不可直接存取的敏感資訊。
 
-- RAD 是 development methodology。
-- Prototyping 優點：可節省時間與成本。
-- Spiral model 是 meta-model，結合多種軟體開發模型。
-- CMM：軟體品質取決於開發與維護流程品質。
+Polyinstantiation 是在多層級資料庫中，允許同一 key 或物件對不同安全層級呈現不同資料，以隱藏高層級資料存在。
 
-### Verification / Validation / Acceptance
+Trusted front-end 常用於把多層級安全能力加到原本不支援 MLS 的 DBMS 前方，替後端做安全檢查。
 
-- Verification：是否正確建構產品。
-- Validation：產品是否符合專案目標或使用需求。
-- Acceptance：確認供應的解決方案滿足使用者需求。
-- Accreditation：指定授權單位正式宣告系統可在特定安全配置與保護措施下運作。
-- Certification：對安全特性進行技術性檢查與評估，常是 accreditation 的前置。
-- Evaluation：詳細檢查與測試 IT 系統或產品安全功能是否正確有效，且無邏輯漏洞。
+## 11. 攻擊、測試設備與營運控制
 
-## 8. 測試與變更控制
+Passive attack 是觀察或蒐集資料，例如 sniffing、shoulder surfing、scavenging。Data diddling 是修改資料，屬於 active attack。
 
-### Debugging / Testing
+Compiled code 的風險是比原始碼更難檢查與理解，惡意邏輯可能不容易被發現。
 
-- Debugging 目的：找出並修正程式 coding flaws。
-- White-box testing：檢查程式內部邏輯結構。
-- Black-box testing：不看內部結構，從外部輸入輸出測試。
-- Regression testing：修改後重跑部分測試，確認沒有引入新錯誤。
-- Security testing：確認新系統或修改後系統有適當 access controls，且不引入 security holes。
+Communications test equipment 必須被政策控管，因為它可能用來觀察網路上傳輸的資訊。
 
-### Test Data
+Pseudo flaw 是刻意設計的假弱點，用來引誘或偵測攻擊者行為。
 
-- 不應使用 live data 覆蓋所有情境。
-- Test data 應納入規格。
-- Test data generator 可產生隨機測試資料。
-- 最佳 stress testing 環境：test environment + sanitized live workload data。
+Operational controls 包含 backup and recovery、contingency planning、operations procedures、personnel security。Auditing 通常不是 operational control 的典型例子。
 
-### Change Control
+Management controls 包含安全控制審查、風險管理與治理活動。
 
-- Preventive controls 範例：
-  - 拒絕 programmer 存取 production data。
-  - change request 包含日期、描述、成本分析、預期影響。
-  - 建立 emergency change procedures。
-- 定期執行 source comparison program 屬於 detective control，不是 preventive control。
+Personnel security 是 operational control，因為它處理人員聘用、轉調、離職與職責。
 
-### Backup
-
-- 備份應先回答：what records to backup。
-- 之後才是何時備份、放哪裡、如何保存。
-
-## 9. Database Security
-
-### DBMS Security 技術
-
-- Perturbation：加入雜訊或調整結果，保護敏感資料。
-- Cell suppression：隱藏特定儲存格資料。
-- Partitioning：分割資料以降低敏感資訊暴露。
-- Padded cells 不是 DBMS security 常見控制。
-
-### Aggregation
-
-- Aggregation：組合多個低敏感資料，推得較高敏感資訊。
-- 題目若說「collection of information items required to be classified at higher level than individual items」，答案也是 Aggregation。
-
-### Inference
-
-- Inference：從可取得資料推論出受限制資訊。
-- Topic 2 中 aggregation 是主要正解，inference 常作為干擾選項。
-
-### Polyinstantiation
-
-- Polyinstantiation：在資料庫中建立多個同鍵但不同安全層級或不同值的資料列，用來隱藏敏感資訊。
-- 題目若問「used in database information security to hide information」，答案是 Polyinstantiation。
-
-### Trusted Front-End
-
-- 將 multilevel security retrofitting 到 DBMS 時，常用 trusted front-end。
-
-## 10. 攻擊與惡意程式風險
-
-### Passive vs Active
-
-- Passive attack 範例：
-  - scavenging
-  - shoulder surfing
-  - sniffing
-- Data diddling 是主動竄改資料，不是 passive attack。
-
-### Compiled Code
-
-- Compiled code 風險較高，因為惡意程式碼可嵌入其中且較難偵測。
-
-### Test Equipment
-
-- 通訊測試設備需納入安全政策，因為可能被用來瀏覽或攔看網路上的資訊。
-
-### Pseudo Flaw
-
-- Pseudo flaw 是故意植入的表面漏洞，用來誘捕入侵者。
-
-## 11. Operational / Management / Technical Controls
-
-### Operational Controls
-
-- 常見 operational controls：
-  - backup and recovery
-  - contingency planning
-  - operations procedures
-  - personnel security
-- Auditing 在題目中不是 operational control 的例子。
-
-### Management Controls
-
-- Security controls review 屬於 management control。
-
-### Personnel Security
-
-- Personnel security 最相關的是 operational controls。
-
-### Separation / Rotation of Duties
-
-- Systems programmer 存取實作安全的系統軟體，可能違反 separation of duties。
-- Rotation of duties 可中斷或降低 collusion 機會。
-- Limiting local access of operations personnel 可能迫使 operator 要與其他職能人員共謀才可取得未授權資料。
+Rotation of duties 可降低長期舞弊與共謀風險。Limiting local access of operations personnel 是職責分離的一種，會迫使高風險操作需要不同職能人員合作。
 
 ## 12. Security Modes
 
-### Dedicated Security Mode
+Security mode 描述在同一系統中，使用者 clearance、need-to-know 與資料分級之間的關係。
 
-- 所有使用者都具備系統內所有資訊的 clearance、need-to-know，並通過適當授權。
+Dedicated Security Mode：所有使用者都有所有資料的 clearance、need-to-know 與正式授權。
 
-### System-High Security Mode
+System-High Security Mode：所有使用者都有系統內最高等級資料的 clearance，但不一定對所有資料都有 need-to-know。
 
-- 所有使用者都具備系統內所有資訊的 clearance，但不一定對所有資料都有 need-to-know。
+Compartmented Security Mode：所有使用者有最高等級 clearance，但對不同 compartment 的 need-to-know 不一定相同。
 
-### Compartmented Security Mode
+Multilevel Security Mode：不是所有使用者都有所有資料的 clearance，系統必須同時處理不同 clearance 與不同 classification 的資料。
 
-- 使用者需有部分資訊的 clearance，且依 compartment / need-to-know 控制。
+## 13. 概念對照速查
 
-### Multilevel Security Mode
-
-- 不要求所有使用者都具備系統處理所有資訊的 clearance。
-- 題目問「哪個 mode 不要求所有使用者都擁有所有資訊 clearance」，答案是 Multilevel security mode。
-
-## 13. 易混淆陷阱
-
-- Reference Monitor 是存取決策概念；Security Kernel 是實作 Reference Monitor 的 TCB 元件。
-- TCB 是保護機制總和；Security Perimeter 是分隔可信與不可信元件的界線。
-- Security Kernel 三要件是 Completeness、Isolation、Verifiability，不是 CIA。
-- Operational Assurance 與 Life-Cycle Assurance 是 Orange Book 的兩大 assurance。
-- Configuration Management 是控制與稽核 TCB 變更，不只是記錄變更。
-- System Integrity 在 TCSEC 題目中偏 hardware/firmware periodic testing。
-- Covert channel 主要分 storage 與 timing。
-- Residual data 與 remanence 是 object/media reuse 的大陷阱。
-- Clearing 防 keyboard attack；purging 防 laboratory attack。
-- Degaussing 不適用 CD-ROM/read-only media；CD-ROM 最安全是 physical destruction。
-- Security by design 最有效；不要等設計完成才加安全。
-- Security department 要在 requirements development 就參與。
-- White-box 看內部邏輯；black-box 看外部行為。
-- Regression testing 是確認修正沒有造成新錯誤。
-- Aggregation 是低敏感資料組合出高敏感資訊；polyinstantiation 是資料庫隱藏資訊技術。
-- Procedure 是 step-by-step instructions；policy 是高層要求。
-
-## 14. 快速背誦表
-
-| 關鍵字 | 答案方向 |
+| 概念 | 核心意思 |
 | --- | --- |
-| Compare subject/object labels | Reference Monitor |
-| Hardware/firmware periodic validation | System Integrity |
-| Operational + Life-Cycle | Orange Book assurance |
-| Audit/control TCB changes | Configuration Management |
-| Storage and timing | Covert channels |
-| Sum of hardware/firmware/software protection | TCB |
-| Implements reference monitor | Security Kernel |
-| Trusted vs untrusted boundary | Security Perimeter |
-| Completeness, Isolation, Verifiability | Security Kernel requirements |
-| More than two privilege levels | Ring Architecture |
-| Prevent process accessing another process | Process Isolation |
-| Used object not refreshed | Residual data disclosure |
-| Data left after erase | Remanence |
-| Keyboard attack protection | Clearing |
-| Laboratory attack protection | Purging |
-| CD-ROM disposal | Physical destruction |
-| Security built from start | Most effective/economical |
-| Requirements development | Security department involvement |
-| Project initiation/planning | Risk analysis |
-| User needs met | Acceptance |
-| Formal approval to operate | Accreditation |
-| Internal logic testing | White-box testing |
-| Rerun tests after changes | Regression testing |
-| Hide DB information | Polyinstantiation |
-| Lower data combined into higher sensitivity | Aggregation |
-| Step-by-step instructions | Procedure |
-| Passive attack exception | Data diddling |
-| Personnel security | Operational control |
-| Review of security controls | Management control |
-| Not all users need all clearances | Multilevel security mode |
-
+| TCB | 系統中所有保護機制的總和 |
+| Security Perimeter | TCB 與非 TCB 的邊界 |
+| Reference Monitor | 檢查 subject 存取 object 的抽象機制 |
+| Security Kernel | Reference Monitor 的實作 |
+| System Integrity | 驗證 TCB 硬體與韌體正常 |
+| Configuration Management | 控制與稽核 TCB 變更 |
+| Covert Channel | 利用非正式通道傳資訊 |
+| Storage / Timing | 兩大 covert channel 類型 |
+| Remanence | 刪除後仍殘留的資料 |
+| Clearing | 防一般攻擊復原 |
+| Purging | 防實驗室等級復原 |
+| Degaussing | 適用磁性媒體 |
+| Security by Design | 從設計初期納入安全 |
+| Verification | 是否照規格做 |
+| Validation | 是否符合使用者需要 |
+| Accreditation | 管理層正式授權上線 |
+| Aggregation | 低敏感資料合併成高敏感資訊 |
+| Inference | 從可見資料推論敏感資訊 |
+| Polyinstantiation | 不同安全層級看到不同資料 |
