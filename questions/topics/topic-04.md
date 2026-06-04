@@ -1,4 +1,338 @@
-﻿## Topic 4
+﻿# Domain 4: Incident Response and Recovery（考前完整版）
+
+---
+
+## 1. Incident Response Life Cycle
+
+NIST 標準最常考的階段：
+
+| 階段 | 目的 |
+|------|------|
+| **Preparation** | 建立流程、工具、人員 |
+| **Detection & Analysis** | 發現與分析事件 |
+| **Containment** | 控制擴散 |
+| **Eradication** | 根除原因 |
+| **Recovery** | 恢復服務 |
+| **Lessons Learned** | 改善與檢討 |
+
+**記憶口訣：** Detect → Contain → Eradicate → Recover
+
+---
+
+## 2. Incident Handling 優先順序（超常考）
+
+發現受害主機後，正確步驟：
+
+1. **Identify** - 識別事件
+2. **Contain** - 控制擴散（最關鍵）
+3. **Collect Evidence** - 蒐集證據
+4. **Eradicate** - 根除原因
+5. **Recover** - 恢復系統
+
+❌ **常見錯誤：**
+- 立刻重開機
+- 直接刪除惡意程式
+- 馬上修補漏洞
+
+✅ **重點：** Preserve evidence、Contain incident 要優先於根除
+
+---
+
+## 3. Volatile Evidence（Order of Volatility）
+
+數位鑑識最愛考的蒐證順序：
+
+| 優先級 | 資料類型 | 易失性 |
+|-------|--------|------|
+| 1 | **CPU Cache** | 最容易消失 |
+| 2 | **RAM (Memory)** | 極易消失 |
+| 3 | **Network Connections** | 易消失 |
+| 4 | **Running Processes** | 易消失 |
+| 5 | **Disk** | 相對穩定 |
+| 6 | **Backup Media** | 最穩定 |
+
+**關鍵點：**
+- RAM、ARP Cache、Routing Table 都比硬碟重要
+- 越容易消失越先收
+- 原始證據不可直接分析，必須 Bit-by-Bit Image
+
+---
+
+## 4. Evidence Requirements（ARMC）
+
+法庭可採性四要件：
+
+| 要件 | 含義 |
+|------|------|
+| **Admissible** | 可被法庭接受 |
+| **Relevant** | 與案件相關 |
+| **Material** | 能證明案件事實 |
+| **Competent** | 依法取得 |
+
+**記憶：ARMC**
+
+---
+
+## 5. Digital Forensics 原則
+
+### ✅ 正確做法：
+- **Bit-by-Bit Image** - 完整鏡像備份
+- **Forensic Image** - 法庭級別證據
+- **Hash Verification** - 蒐證前後用 MD5/SHA-256 驗證完整性
+
+### ❌ 錯誤做法：
+- 在原始磁碟直接操作
+- 修改任何數據
+
+---
+
+## 6. Chain of Custody（必背）
+
+必須記錄 Who、What、When、Where、Why、How
+
+**目的：** 證明 **Evidence Integrity**（不是證明犯罪）
+
+**關鍵點：**
+- 每次移交都要記錄
+- 缺一不可
+- 破壞 Chain of Custody = 證據無效
+
+---
+
+## 7. Business Impact Analysis (BIA)
+
+### BIA 定義：
+
+BIA 是：
+- 定義 **Critical Functions**
+- 定義 **Dependencies**
+- 定義 **Recovery Priority**
+- 定義 **RTO/RPO**
+
+### ❌ BIA 不會：
+- 選擇 Hot Site
+- 購買 Backup 軟體
+- 建立 Recovery Team
+
+**考試常問：** 優先考慮 Dependencies（相依性）
+
+---
+
+## 8. Maximum Tolerable Downtime (MTD)
+
+### 定義：
+業務可忍受的最長停機時間
+
+### 關係圖：
+```
+MTD（業務可忍受）
+ ├─ RTO（技術恢復時間）≤ MTD
+ └─ Recovery Point
+```
+
+### 必背公式：
+```
+RTO ≤ MTD
+```
+否則業務已經死亡。
+
+---
+
+## 9. Recovery Time Objective (RTO) vs Recovery Point Objective (RPO)
+
+| 指標 | 定義 | 單位 |
+|------|------|------|
+| **RTO** | 從災難到恢復服務的時間 | 小時/分鐘 |
+| **RPO** | 最多可接受的資料損失量 | 小時/天 |
+
+**記憶：**
+- RTO = 時間
+- RPO = 資料量
+
+---
+
+## 10. Backup Site 完整比較
+
+| 類型 | 設備 | 資料 | 立即可用 | 成本 |
+|------|------|------|--------|------|
+| **Hot Site** | ✅ 有 | ✅ 有 | ✅ 是 | $$$$（最高） |
+| **Warm Site** | ✅ 部分 | ⚠️ 部分 | ⚠️ 可能 | $$$ |
+| **Cold Site** | ❌ 無 | ❌ 無 | ❌ 否 | $（最低） |
+| **Mobile Site** | ✅ 有（貨櫃） | ⚠️ 需傳輸 | ⚠️ 可拖移 | $$ |
+| **Mirrored Site** | ✅ 有 | ✅ 即時同步 | ✅ 幾乎零停機 | $$$$ |
+
+**考試常出：** Cold Site 最便宜、最難測試
+
+---
+
+## 11. Backup Strategy - Grandfather-Father-Son (GFS)
+
+| 級別 | 頻率 | 保存期 |
+|------|------|--------|
+| **Son** | 每日備份 | 1 週 |
+| **Father** | 每週備份 | 1 月 |
+| **Grandfather** | 每月備份 | 1 年 |
+
+**目的：** 輪替保存，節省空間，增加恢復選項
+
+---
+
+## 12. Alternate Processing Strategy
+
+### Remote Journaling
+- 只傳：**Transaction Logs**
+- 最快速
+
+### Electronic Vaulting
+- 傳：**完整資料檔案**
+- 中等恢復能力
+
+### Database Shadowing
+- 即時同步整個資料庫
+- **RPO 最佳**
+- **成本最高**
+
+**恢復能力排序：**
+```
+Remote Journaling (最快)
+        ↓
+Electronic Vaulting (中等)
+        ↓
+Database Shadowing (最完整)
+```
+
+---
+
+## 13. Disaster Recovery Testing（風險從低到高）
+
+| 級別 | 方式 | 風險 | 備註 |
+|------|------|------|------|
+| 1 | **Checklist** | 最低 | 只看文件 |
+| 2 | **Walkthrough** | 低 | 走一遍流程 |
+| 3 | **Simulation** | 中 | 模擬災難 |
+| 4 | **Parallel Test** | 中高 | 雙系統運行 |
+| 5 | **Full Interruption** | 最高 | 真實切換 |
+
+**記憶：CWSPF**
+
+**重點：**
+- **正式切換前必須成功完成 Parallel Test**
+- Full Interruption 最危險，但必要
+
+---
+
+## 14. Risk Management 基本概念
+
+| 概念 | 定義 |
+|------|------|
+| **Asset** | 資產 |
+| **Threat** | 威脅 |
+| **Vulnerability** | 弱點 |
+| **Exposure** | 暴露程度 |
+| **Risk** | 風險 |
+
+### 公式：
+```
+Risk = Threat × Vulnerability
+```
+
+---
+
+## 15. Quantitative Risk Analysis（必背公式）
+
+### SLE (Single Loss Expectancy)
+```
+SLE = Asset Value × EF (Exposure Factor)
+```
+
+### ALE (Annualized Loss Expectancy)
+```
+ALE = SLE × ARO (Annualized Rate of Occurrence)
+```
+
+### Cost Benefit Analysis
+```
+Safeguard Value = ALE before - ALE after
+```
+
+**記憶：** 越往下算越接近真實成本效益
+
+---
+
+## 16. Risk Response（四大處理方式）
+
+| 方式 | 說明 | 例子 |
+|------|------|------|
+| **Mitigate** | 降低風險 | 裝防火牆 |
+| **Transfer** | 轉移風險 | 購買保險 |
+| **Accept** | 接受風險 | 允許政策例外 |
+| **Avoid** | 避免風險 | 停止某項業務 |
+
+**考試常考：**
+- 保險 = Risk Transfer
+- 政策例外 = Risk Acceptance
+
+---
+
+## 17. Malware Recovery（新增關鍵點）
+
+事件後恢復，正確做法：
+
+✅ **必須：**
+- Rebuild System（重建系統）
+- Reimage System（重新映像）
+- Restore Backup（從備份恢復）
+
+❌ **不要只：**
+- 刪除 Malware（可能留後門）
+
+**原因：** 惡意軟體可能留下隱藏的後門，簡單刪除無法完全根除
+
+---
+
+## 18. Lessons Learned（最常被忽略）
+
+Recovery 結束後，必須執行：
+
+### Post-Incident Review
+**包括：**
+- 找 **Root Cause**（根本原因）
+- 修正流程
+- 更新 IRP（Incident Response Plan）
+- 更新控制措施
+
+**重點：** 這是成熟 Incident Response 的最後一步，也是最容易被忽略的
+
+---
+
+## 19. 考前最容易出現的 20 個關鍵字（必背）
+
+| 關鍵字 | 說明 |
+|--------|------|
+| **BCP** | 維持業務 |
+| **DRP** | 恢復業務 |
+| **BIA** | 業務影響分析 |
+| **RTO** | 恢復時間 |
+| **RPO** | 資料損失量 |
+| **MTD** | 最大容忍停機 |
+| **Hot Site** | 最快 |
+| **Cold Site** | 最便宜 |
+| **Parallel Test** | Full 前置 |
+| **Full Interruption** | 最危險 |
+| **SLE** | AV × EF |
+| **ALE** | SLE × ARO |
+| **Remote Journaling** | 日誌同步 |
+| **Electronic Vaulting** | 資料同步 |
+| **Database Shadowing** | 即時同步 |
+| **Chain of Custody** | 證據追蹤 |
+| **Volatile Evidence** | RAM 優先 |
+| **Containment** | 控制擴散 |
+| **Eradication** | 根除原因 |
+| **Lessons Learned** | 事後改善 |
+
+---
+
+## Topic 4
 
 ### Question 1
 
