@@ -55,6 +55,46 @@ RPO Recovery Point Objective 是資料可以容忍遺失到哪個時間點。它
 
 恢復優先順序應依 BIA 決定，先恢復最關鍵的 business functions。災難解除後，從 alternate site 回 primary site 時，通常先搬回 least critical components，降低主要服務再次中斷的風險。
 
+### BIA 八個步驟與 RTO/RPO/MTO 範例
+
+BIA 常見八個步驟：
+
+1. 取得管理層支持，確認 BIA 的目的、範圍、資源與負責人。
+2. 識別關鍵業務功能，找出哪些流程、系統、資料或服務最重要。
+3. 收集業務流程資料，例如部門訪談、問卷、文件審查、系統依賴關係。
+4. 評估中斷影響，包括財務、營運、法律、聲譽、客戶服務與合規影響。
+5. 決定可接受中斷時間，設定 RTO、RPO、MTO/MTD。
+6. 排列恢復優先順序，決定哪些業務或系統要先恢復。
+7. 識別恢復所需資源與相依性，例如人員、設備、資料、供應商、網路與場地。
+8. 撰寫並提交 BIA 報告，作為 BCP/DRP 的依據。
+
+RTO/RPO/MTO 重點：
+
+| 指標 | 意思 | 範例 |
+| --- | --- | --- |
+| RPO, Recovery Point Objective | 最多可接受遺失多少資料 | 最多只能遺失 15 分鐘交易資料 |
+| RTO, Recovery Time Objective | 目標恢復時間 | 系統要在 4 小時內恢復 |
+| MTO/MTD, Maximum Tolerable Outage/Downtime | 最大可容忍中斷時間 | 業務最多只能停 8 小時 |
+
+大小關係：
+
+```text
+RTO <= MTO/MTD
+```
+
+範例：一間網路銀行的核心交易系統中斷時，業務最多只能停機 8 小時，否則會造成嚴重財務與法規問題，所以 MTO/MTD = 8 小時。公司為了不要超過最大容忍時間，設定 RTO = 4 小時，代表系統必須在 4 小時內恢復。同時，公司最多只能接受遺失 15 分鐘交易資料，所以 RPO = 15 分鐘。
+
+記法：
+
+```text
+RPO 看資料遺失
+RTO 看恢復時間
+MTO/MTD 看最大容忍停機時間
+
+RTO 通常小於或等於 MTO/MTD
+RPO 不一定要跟 RTO 比大小
+```
+
 ## 4. 替代站點與 Recovery Site Strategies
 
 Hot site 是最完整、最快可用、也通常最昂貴的替代站點。它應包含已安裝的 computers、peripherals、climate control、cables、telecommunications、networking equipment、UPS 等。
