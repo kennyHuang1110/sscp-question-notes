@@ -8,6 +8,7 @@ This repository keeps SSCP practice questions in a Git-friendly format.
 - `questions/sscp_questions.md` - all questions converted to Markdown.
 - `questions/topics/` - one Markdown file per topic.
 - `notes/` - study notes and concept summaries by domain.
+- `notes/exam-vocabulary.md` - exam vocabulary and quick recognition cues.
 
 ## SSCP Domains
 
