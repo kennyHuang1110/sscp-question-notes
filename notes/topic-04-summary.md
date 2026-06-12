@@ -15,6 +15,8 @@ Disaster Recovery Planning, DRP，通常比較偏 IT 與技術恢復，重點是
 - Incident Response：處理正在發生的安全事件。
 - Contingency Planning：事先準備替代做法，讓中斷時仍有路可走。
 
+考題看到「災難後要優先恢復哪些服務」且問 DRP 內容時，通常優先選 Data/Telecomm/IS facilities。Marketing/Public relations、Facilities security 比較不像 DRP 的主要技術恢復範圍；IS Operations 是營運功能，但 DRP 更常聚焦在支撐資訊系統恢復的資料、通訊與資訊設施。
+
 BCP/DRP 主要處理的是 availability 與 business survivability，但也會牽涉 integrity、confidentiality、法律責任與聲譽。
 
 ## 2. Business Impact Analysis, BIA
@@ -54,6 +56,8 @@ RPO Recovery Point Objective 是資料可以容忍遺失到哪個時間點。它
 如果一個系統交易量高、資料不能丟，RPO 會很短，可能需要 remote journaling、replication 或 near-real-time backup。
 
 恢復優先順序應依 BIA 決定，先恢復最關鍵的 business functions。災難解除後，從 alternate site 回 primary site 時，通常先搬回 least critical components，降低主要服務再次中斷的風險。
+
+LAN 與 server salvage 的順序要先 assess damage，先確認 LAN、servers、通訊線路、電源與環境受損程度，再做 damage mitigation、recover equipment，最後才安裝或重建 LAN communications network and servers。不要一開始就急著安裝或復原設備，因為還不知道哪些資產可用、哪些風險仍在擴大。
 
 ### BIA 八個步驟與 RTO/RPO/MTO 範例
 
@@ -386,10 +390,12 @@ Contingency planning controls 評估時常看：
 | --- | --- |
 | BCP | 維持 critical business functions |
 | DRP | 恢復 IT 與處理能力 |
+| DRP primary services | Data/Telecomm/IS facilities |
 | BIA | 評估中斷造成的業務影響 |
 | Dependency | BIA 中業務流程互相依賴的重點 |
 | RTO | 多久內要恢復 |
 | RPO | 最多可失去多少資料 |
+| LAN/server salvage | 先 assess damage，再 mitigate/recover/install |
 | Hot site | 設備完整、最快、最貴 |
 | Warm site | 部分設備 |
 | Cold site | 最便宜、恢復慢、最難測試 |
